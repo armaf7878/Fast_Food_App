@@ -50,10 +50,12 @@ INSTALLED_APPS = [
     #my app
     'accounts',
     'catalog',
-    'feedback',
+    'feedback', 
     'ordering',
     'reports',
-    'tracking'
+    'tracking',
+    'foods',
+    'restaurants'
 ]
 
 MIDDLEWARE = [
@@ -88,9 +90,6 @@ WSGI_APPLICATION = 'fast_food.wsgi.application'
 CHANNEL_LAYERS = {
     'default': {
         'BACKEND': 'channels.layers.InMemoryChannelLayer'
-        # Khi deploy thật thì đổi sang Redis
-        # 'BACKEND': 'channels_redis.core.RedisChannelLayer',
-        # 'CONFIG': {'hosts': [('127.0.0.1', 6379)]},
     },
 }
 
@@ -153,6 +152,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.TokenAuthentication',
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
     'DEFAULT_PERMISSION_CLASSES': (
