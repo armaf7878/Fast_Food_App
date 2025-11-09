@@ -55,7 +55,8 @@ INSTALLED_APPS = [
     'reports',
     'tracking',
     'foods',
-    'restaurants'
+    'restaurants',
+    'cart',
 ]
 
 MIDDLEWARE = [
