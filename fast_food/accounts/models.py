@@ -42,6 +42,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     avatar = models.ImageField(upload_to='avatars/', null=True, blank=True)
     role = models.CharField(max_length=20, choices=Role.choices, default=Role.END_USER)
     is_active = models.BooleanField(default=True)
+    is_online = models.BooleanField(default=False)
+    is_busy = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

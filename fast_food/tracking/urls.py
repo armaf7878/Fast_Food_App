@@ -1,7 +1,6 @@
 from django.urls import path
-from . import views
+from .views import get_last_location
 
 urlpatterns = [
-    # Ví dụ endpoint test tạm
-    path('test/', views.test_api, name='test_api'),
+    path('orders/<int:order_id>/last-location/', get_last_location),
 ]

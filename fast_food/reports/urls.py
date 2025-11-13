@@ -1,8 +1,7 @@
-
 from django.urls import path
-from . import views
+from .views import get_daily_report, generate_daily_report
 
 urlpatterns = [
-    # Ví dụ endpoint test tạm
-    path('test/', views.test_api, name='test_api'),
+    path("daily/", get_daily_report),
+    path("generate/", generate_daily_report),
 ]

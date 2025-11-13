@@ -3,7 +3,9 @@ from . import views
 
 
 urlpatterns = [
-    # Ví dụ endpoint test tạm
-    path('register/', views.test_api, name='test_api'),
-    path('login/', views.test_api, name='test_api'),
+
+    path('register/', views.register, name='register'),
+    path('login/', views.login, name='login'),
+    path('online/', views.shipper_online, name='onlineShipper'),
+    path('offline/', views.shipper_offline, name='offlineShipper'),
 ]

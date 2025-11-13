@@ -14,13 +14,6 @@ urlpatterns = [
     path('api/feedback/', include('feedback.urls')),
     path('api/reports/', include('reports.urls')),
     path('api/foods/', include('foods.urls')),
-    path('api/restaurants/', include('restaurants.urls')),
     path('api/cart/', include('cart.urls')),
-
-    # Swagger docs
-    path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
-    path('api/docs/', SpectacularSwaggerView.as_view(url_name='schema')),
-    
-    path('api/auth/jwt/create/', TokenObtainPairView.as_view(), name='jwt_create'),
-    path('api/auth/jwt/refresh/', TokenRefreshView.as_view(), name='jwt_refresh'),
+    path('api/voucher/', include('voucher.urls')),
 ]

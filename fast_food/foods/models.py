@@ -1,11 +1,9 @@
 from django.db import models
 from catalog.models import Catalog
-from restaurants.models import Restaurant
 
 class Food(models.Model):
     food_id = models.AutoField(primary_key = True)
-    restaurant_id = models.ForeignKey(Restaurant, on_delete = models.CASCADE, related_name = 'restaurant')
-    catalog_id = models.ForeignKey(Catalog, on_delete = models.SET_NULL, related_name='foods')
+    catalog_id = models.ForeignKey(Catalog, on_delete = models.SET_NULL , null= True , related_name='foods')
     
     food_name = models.CharField(max_length = 100, unique= True)
     food_description = models.TextField(null= True, blank = True)
@@ -16,4 +14,4 @@ class Food(models.Model):
     created_at = models.DateTimeField(auto_now_add = True)
     
     def __str__(self):
-        return f"{self.food_name} ({self.restaurant_id.res_name})"
+        return f"{self.food_name}"
