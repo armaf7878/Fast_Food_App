@@ -6,7 +6,7 @@ from .models import ShipperLocation
 
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])  # hoặc IsAuthenticated
+@permission_classes([IsAuthenticated])
 def get_last_location(request, order_id):
     try:
         loc = ShipperLocation.objects.filter(order_id=order_id).latest("updated_at")
