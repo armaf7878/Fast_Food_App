@@ -10,6 +10,7 @@ class Voucher(models.Model):
         AMOUNT = 'amount', 'Giảm theo số tiền'
 
     voucher_id = models.AutoField(primary_key=True)
+    voucher_name = models.CharField(max_length=255)
     discount_type = models.CharField(
         max_length=20,
         choices=DiscountType.choices

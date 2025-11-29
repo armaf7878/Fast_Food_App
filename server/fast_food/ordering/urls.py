@@ -3,6 +3,8 @@ from . import views
 
 urlpatterns = [
     path('pending/', views.pending, name='pendingOrder'),
+    path('cooking/', views.cooking, name='cookingOrder'),
+    path('orderlist_client/', views.orderlist_client, name='orderlistClient'),
     path('create/', views.create, name='createOrder'),
     path('assign-staff/<str:order_id>/', views.assign_staff, name='assignOrder'),
     path('ready/<str:order_id>/', views.ready, name='readyOrder'),

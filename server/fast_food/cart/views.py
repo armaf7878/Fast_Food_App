@@ -24,9 +24,10 @@ def checkCartExist(user_id):
 
 
 @api_view(['GET'])
-def showall(request,user_id):
+def showall(request):
     try:
         cart = Cart.objects.get(user_id=request.user.user_id)
+        
     except Cart.DoesNotExist:
         try:
             cart = Cart.objects.create(user_id=request.user.user_id)
@@ -36,7 +37,9 @@ def showall(request,user_id):
                 'error': e
             }, status = status.HTTP_400_BAD_REQUEST)
     cartItem = CartItem.objects.filter(cart_id = cart.cart_id)
-    if  CartItem.DoesNotExist:
+
+    print(str(cartItem))
+    if not cartItem:
         return Response({
             'message': 'Giỏ hàng đang trống'
         }, status=status.HTTP_200_OK)    
@@ -47,8 +50,21 @@ def showall(request,user_id):
 @api_view(['POST'])
 def create(request, food_id):
     cart_id = checkCartExist(request.user.user_id)
-    print(cart_id)
     try:
+        cartItem = CartItem.objects.get(cart_id = cart_id, food_id = food_id)
+        if cartItem:
+            request.data['quantity'] = cartItem.quantity + 1
+            serialierItem = CartItemSerializer(cartItem, data = request.data, partial = True, context = {'request', request} )
+            if serialierItem.is_valid():
+                serialierItem.save()
+                return Response({
+                    'message': 'Đã cập nhật số lượng cart item thành công',
+                    'data': serialierItem.data
+                }, status= status.HTTP_200_OK)
+            return Response({
+            'message': 'Cập nhật số lượng cart item thất bại',
+            'data': serialierItem.data
+        }, status= status.HTTP_404_NOT_FOUND)
         cartItem = CartItem.objects.create(food_id=food_id, cart_id = cart_id, quantity = 1)
     except Exception as e:
         print(str(e))
@@ -65,9 +81,11 @@ def create(request, food_id):
 @api_view(['PATCH'])
 
 def update(request, cartItem_id):
-
+    print("come here 1")
     try:
+        print("come here 2")
         cartItem = CartItem.objects.get(cartItem_id = cartItem_id)
+        print("come here 3")
     except CartItem.DoesNotExist:
         return Response({
             'message': 'Món không tồn tại trong giỏ hàng'

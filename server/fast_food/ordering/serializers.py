@@ -5,6 +5,24 @@ from voucher.models import Voucher
 from accounts.models import User
 from django.db import transaction
 
+class OrderItemReadSerializer(serializers.ModelSerializer):
+    food_name = serializers.CharField(source="food.food_name", read_only=True)
+    food_img = serializers.CharField(source="food.food_img", read_only=True)
+    food_price = serializers.CharField(source="food.food_price", read_only=True)
+
+    class Meta:
+        model = OrderItem
+        fields = [
+            "orderItem_id", 
+            "food", 
+            "food_name", 
+            "food_img", 
+            "food_price",
+            "quantity", 
+            "price_each", 
+            "sub_total"
+        ]
+
 class OrderItemSerializer(serializers.ModelSerializer):
     food_id = serializers.IntegerField(write_only=True)
 
@@ -43,6 +61,8 @@ class OrderItemSerializer(serializers.ModelSerializer):
 
 class OrderSerializer(serializers.ModelSerializer):
     items = OrderItemSerializer(many=True, write_only=True)
+    order_items_read = OrderItemReadSerializer(source="order_orderItem", many=True, read_only=True)
+
     voucher_id = serializers.IntegerField(required=False, allow_null=True)
 
     class Meta:
@@ -52,17 +72,16 @@ class OrderSerializer(serializers.ModelSerializer):
             'voucher_id', 'order_lat', 'order_long', 'order_address',
             'order_phone', 'order_date', 'subtotal',
             'discount_amount', 'total', 'status',
-            'items'
+            'items',            # write-only
+            'order_items_read'  # read-only (cho pending)
         ]
         read_only_fields = ['order_id', 'order_date', 'subtotal', 'discount_amount', 'total']
 
     def validate(self, attrs):
-        # Validate staff role
         staff = attrs.get("staff")
         if staff and staff.role != "staff":
             raise serializers.ValidationError("Người được gán staff không phải role staff.")
 
-        # Validate shipper role
         shipper = attrs.get("shipper")
         if shipper and shipper.role != "shipper":
             raise serializers.ValidationError("Người được gán shipper không phải role shipper.")
@@ -84,27 +103,20 @@ class OrderSerializer(serializers.ModelSerializer):
                 except Voucher.DoesNotExist:
                     raise serializers.ValidationError("Voucher không tồn tại.")
 
-
             for item in items_data:
                 food_id = item["food_id"]
                 quantity = item["quantity"]
 
                 food = Food.objects.select_for_update().get(food_id=food_id)
 
-
-                # Kiểm tra tồn kho lần cuối
                 if food.quantity_available < quantity:
                     raise serializers.ValidationError(
                         f"Không đủ số lượng món {food.food_name}. Còn lại: {food.quantity_available}"
                     )
 
-                # Trừ tồn kho
                 food.quantity_available -= quantity
-
-                # Nếu hết hàng → auto khóa món
                 if food.quantity_available == 0:
                     food.is_active = False
-
                 food.save()
 
                 price_each = food.food_price
@@ -143,7 +155,6 @@ class OrderSerializer(serializers.ModelSerializer):
                 voucher=voucher
             )
 
-    
             for item in order_items:
                 OrderItem.objects.create(order=order, **item)
 

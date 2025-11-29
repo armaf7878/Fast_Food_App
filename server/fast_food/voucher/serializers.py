@@ -11,12 +11,14 @@ class VoucherSerializer(serializers.ModelSerializer):
         read_only_fields = ['voucher_id', 'created_at', 'used_count']
 
     def validate(self, attrs):
+        voucher_name = attrs.get("voucher_name")
         discount_type = attrs.get("discount_type")
         discount_value = attrs.get("discount_value")
         start_date = attrs.get("start_date")
         end_date = attrs.get("end_date")
         min_val = attrs.get("min_order_value")
-
+        if voucher_name == "":
+            raise serializers.ValidationError("Phải có tên cho voucher")
         if discount_type == "percent" and not (0 < discount_value <= 100):
             raise serializers.ValidationError("Giảm phần trăm phải từ 1 đến 100.")
 

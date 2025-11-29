@@ -11,6 +11,7 @@ from asgiref.sync import async_to_sync
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def create(request):
+    request.data['user'] = request.user.user_id
     serializer = OrderSerializer(data=request.data)
     
     if serializer.is_valid():
@@ -29,6 +30,16 @@ def pending(request):
         return Response({"detail": "Bạn không phải staff"}, status=403)
 
     orders = Order.objects.filter(status="pending", staff__isnull=True)
+    serializer = OrderSerializer(orders, many=True)
+    return Response(serializer.data)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def cooking(request):
+    if request.user.role != "staff":
+        return Response({"detail": "Bạn không phải staff"}, status=403)
+
+    orders = Order.objects.filter(status="cooking", staff_id=request.user.user_id)
     serializer = OrderSerializer(orders, many=True)
     return Response(serializer.data)
     
@@ -77,11 +88,13 @@ def ready(request, order_id):
         return Response({"detail": "Chỉ đơn cooking mới báo hoàn tất chuẩn bị"}, status=400)
 
     shipper = get_available_shipper()
+    if not shipper:
+        return Response({"detail": "Không có shipper rảnh"}, status=400)
+
     shipper.is_busy = True
     shipper.save()
 
-    if not shipper:
-        return Response({"detail": "Không có shipper rảnh"}, status=400)
+    
 
     order.shipper = shipper
     order.status = "delivering"
@@ -134,3 +147,11 @@ def finish_order(request, order_id):
     )
 
     return Response({"message": "Giao hàng thành công!"})
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def orderlist_client(request):
+
+    orders = Order.objects.filter(user_id=request.user.user_id)
+    serializer = OrderSerializer(orders, many=True)
+    return Response(serializer.data)
