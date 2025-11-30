@@ -51,7 +51,7 @@ def showall(request):
 def create(request, food_id):
     cart_id = checkCartExist(request.user.user_id)
     try:
-        cartItem = CartItem.objects.get(cart_id = cart_id, food_id = food_id)
+        cartItem = CartItem.objects.filter(cart_id = cart_id, food_id = food_id).first()
         if cartItem:
             request.data['quantity'] = cartItem.quantity + 1
             serialierItem = CartItemSerializer(cartItem, data = request.data, partial = True, context = {'request', request} )
@@ -65,6 +65,15 @@ def create(request, food_id):
             'message': 'Cập nhật số lượng cart item thất bại',
             'data': serialierItem.data
         }, status= status.HTTP_404_NOT_FOUND)
+        print(request.data.get('quantity'))
+        if(request.data.get('quantity') != None):
+            cartItem = CartItem.objects.create(food_id=food_id, cart_id = cart_id, quantity = request.data['quantity'])
+            serializerItem = CartItemSerializer(cartItem)
+            return Response({
+                'message': 'Thêm món vào cart item thành công',
+                'data': serializerItem.data
+            }, status= status.HTTP_200_OK)
+
         cartItem = CartItem.objects.create(food_id=food_id, cart_id = cart_id, quantity = 1)
     except Exception as e:
         print(str(e))

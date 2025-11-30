@@ -1,7 +1,7 @@
 import jwt
 from django.conf import settings
 from channels.db import database_sync_to_async
-
+from urllib.parse import parse_qs
 class JWTAuthMiddleware:
     def __init__(self, inner):
         self.inner = inner
@@ -16,6 +16,14 @@ class JWTAuthMiddleware:
             auth_header = headers[b"authorization"].decode()
             if auth_header.startswith("Bearer "):
                 token = auth_header.split(" ")[1]
+
+        if token is None:
+            query_string = scope.get("query_string", b"").decode()
+            params = parse_qs(query_string)
+            token_list = params.get("token", None)
+            print(token_list)
+            if token_list:
+                token = token_list[0]
 
         # Load user từ token
         scope["user"] = await self.get_user_from_token(token)

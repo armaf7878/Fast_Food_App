@@ -7,21 +7,45 @@ from .models import Order
 from accounts.models import User
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
+from django.db import transaction
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def create(request):
-    request.data['user'] = request.user.user_id
-    serializer = OrderSerializer(data=request.data)
-    
+    data = request.data.copy()
+    data['user'] = request.user.user_id
+
+    serializer = OrderSerializer(data=data)
+
     if serializer.is_valid():
-        order = serializer.save()
+        with transaction.atomic():
+
+            # 1. Tạo đơn hàng + item
+            order = serializer.save()
+
+            # 2. Lấy danh sách food_id từ body items FE gửi lên
+            requested_items = data.get("items", [])
+            food_ids = [item['food_id'] for item in requested_items]
+            print("CHECKDELETE", food_ids)
+
+            print("CHECKDELETE", order.order_id)
+            # 3. Xoá các CartItem đúng food_id đã đặt
+            from cart.models import CartItem, Cart
+            
+            cart = Cart.objects.get(user_id = request.user.user_id)
+
+            CartItem.objects.filter(
+                cart_id=cart.cart_id,
+                food_id__in=food_ids
+            ).delete()
+        
         return Response({
             "message": "Tạo đơn hàng thành công",
             "order_id": order.order_id
         }, status=status.HTTP_201_CREATED)
 
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
